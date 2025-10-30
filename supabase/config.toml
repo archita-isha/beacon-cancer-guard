@@ -1,0 +1,7 @@
+project_id = "brxjmsbeeadicfnijsyi"
+
+[auth]
+enabled = true
+
+[functions.analyze-cancer]
+verify_jwt = false
