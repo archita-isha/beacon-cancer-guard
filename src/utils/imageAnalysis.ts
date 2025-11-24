@@ -4,6 +4,8 @@ export interface AnalysisMetrics {
   colorVariation: number;
   diameter: number;
   overallRisk: 'low' | 'moderate' | 'high';
+  classification: 'benign' | 'malignant';
+  confidence: number;
   details: {
     dominantColors: number;
     edgeComplexity: number;
@@ -48,12 +50,21 @@ export const analyzeImage = async (imageData: string): Promise<AnalysisMetrics> 
       
       const overallRisk = riskScore >= 3 ? 'high' : riskScore >= 2 ? 'moderate' : 'low';
       
+      // Classification based on combined metrics
+      const classificationScore = (asymmetryScore * 0.3) + (borderIrregularity * 0.3) + 
+                                  (colorVariation / 10 * 0.2) + (details.edgeComplexity * 0.2);
+      
+      const classification = classificationScore > 0.35 ? 'malignant' : 'benign';
+      const confidence = Math.min(Math.abs(classificationScore - 0.35) * 200, 99);
+      
       resolve({
         asymmetryScore,
         borderIrregularity,
         colorVariation,
         diameter,
         overallRisk,
+        classification,
+        confidence,
         details
       });
     };

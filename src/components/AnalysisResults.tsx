@@ -36,6 +36,16 @@ export const AnalysisResults = ({ analysis, onReset }: AnalysisResultsProps) => 
                 {analysis.overallRisk} Risk
               </h2>
             </div>
+            <div className="pt-4 border-t">
+              <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-lg font-bold ${
+                analysis.classification === 'malignant' 
+                  ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300' 
+                  : 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300'
+              }`}>
+                <span className="uppercase">{analysis.classification}</span>
+                <span className="text-sm font-normal opacity-75">({analysis.confidence.toFixed(1)}% confidence)</span>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
@@ -113,13 +123,6 @@ export const AnalysisResults = ({ analysis, onReset }: AnalysisResultsProps) => 
           </div>
 
           <div className="pt-6 border-t">
-            <div className="bg-muted/50 p-4 rounded-lg text-sm text-muted-foreground">
-              <p className="font-medium mb-2">Methodology:</p>
-              <p>Classical pattern recognition using ABCDE criteria (Asymmetry, Border, Color, Diameter, Evolution). Results based on pixel-level image analysis without AI inference.</p>
-            </div>
-          </div>
-
-          <div className="pt-4">
             <Button onClick={onReset} className="w-full" size="lg">
               Analyze Another Image
             </Button>
