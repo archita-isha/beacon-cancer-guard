@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Upload, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { analyzeImage, AnalysisMetrics } from "@/utils/imageAnalysis";
 
 interface ImageUploadProps {
-  onAnalysisComplete: (result: string) => void;
+  onAnalysisComplete: (result: AnalysisMetrics) => void;
 }
 
 export const ImageUpload = ({ onAnalysisComplete }: ImageUploadProps) => {
@@ -40,16 +40,12 @@ export const ImageUpload = ({ onAnalysisComplete }: ImageUploadProps) => {
 
     setIsAnalyzing(true);
     try {
-      const { data, error } = await supabase.functions.invoke('analyze-cancer', {
-        body: { imageData: selectedImage }
-      });
-
-      if (error) throw error;
-
-      onAnalysisComplete(data.analysis);
+      const metrics = await analyzeImage(selectedImage);
+      
+      onAnalysisComplete(metrics);
       toast({
         title: "Analysis Complete",
-        description: "Your results are ready",
+        description: "Classical pattern recognition complete",
       });
     } catch (error) {
       console.error('Analysis error:', error);
