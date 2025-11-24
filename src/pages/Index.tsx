@@ -4,16 +4,17 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { AnalysisResults } from "@/components/AnalysisResults";
 import { CancerInfo } from "@/components/CancerInfo";
 import { RiskAssessment } from "@/components/RiskAssessment";
+import { AnalysisMetrics } from "@/utils/imageAnalysis";
 
 const Index = () => {
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisMetrics | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement>(null);
 
   const scrollToUpload = () => {
     uploadSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleAnalysisComplete = (result: string) => {
+  const handleAnalysisComplete = (result: AnalysisMetrics) => {
     setAnalysisResult(result);
   };
 
