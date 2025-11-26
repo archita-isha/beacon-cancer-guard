@@ -12,6 +12,12 @@ export interface AnalysisMetrics {
     symmetryRatio: number;
     quantumEntanglement: number;
     superpositionScore: number;
+    benignIndicators: {
+      uniformColor: number;
+      smoothBorders: number;
+      regularShape: number;
+      overallBenignScore: number;
+    };
   };
 }
 
@@ -41,24 +47,35 @@ export const analyzeImage = async (imageData: string): Promise<AnalysisMetrics> 
       const quantumEntanglement = calculateQuantumEntanglement(pixels, canvas.width, canvas.height);
       const superpositionScore = calculateSuperposition(pixels, canvas.width, canvas.height);
       
+      // Benign skin condition detection (moles, skin tags, etc.)
+      const benignIndicators = detectBenignFeatures(pixels, canvas.width, canvas.height, {
+        asymmetryScore,
+        borderIrregularity,
+        colorVariation
+      });
+      
       const details = {
         dominantColors: countDominantColors(pixels),
         edgeComplexity: calculateEdgeComplexity(pixels, canvas.width, canvas.height),
         symmetryRatio: calculateSymmetryRatio(pixels, canvas.width, canvas.height),
         quantumEntanglement,
-        superpositionScore
+        superpositionScore,
+        benignIndicators
       };
       
       // Quantum-inspired risk scoring with amplitude amplification
       let riskScore = 0;
       const amplificationFactor = 1 + (quantumEntanglement * 0.3);
       
+      // Apply benign dampening factor - strong benign indicators reduce risk
+      const benignDampening = 1 - (benignIndicators.overallBenignScore * 0.5);
+      
       // More balanced thresholds for better benign/malignant separation
-      if (asymmetryScore > 0.35) riskScore += (asymmetryScore * amplificationFactor * 0.8);
-      if (borderIrregularity > 0.4) riskScore += (borderIrregularity * amplificationFactor * 0.8);
-      if (colorVariation > 3.5) riskScore += (colorVariation / 12 * amplificationFactor);
+      if (asymmetryScore > 0.35) riskScore += (asymmetryScore * amplificationFactor * 0.8 * benignDampening);
+      if (borderIrregularity > 0.4) riskScore += (borderIrregularity * amplificationFactor * 0.8 * benignDampening);
+      if (colorVariation > 3.5) riskScore += (colorVariation / 12 * amplificationFactor * benignDampening);
       if (diameter > 600) riskScore += (diameter / 1200 * amplificationFactor * 0.6);
-      if (superpositionScore > 0.5) riskScore += (superpositionScore * amplificationFactor * 0.7);
+      if (superpositionScore > 0.5) riskScore += (superpositionScore * amplificationFactor * 0.7 * benignDampening);
       
       const normalizedRisk = riskScore / 2.5;
       const overallRisk = normalizedRisk >= 0.65 ? 'high' : normalizedRisk >= 0.35 ? 'moderate' : 'low';
@@ -75,21 +92,33 @@ export const analyzeImage = async (imageData: string): Promise<AnalysisMetrics> 
         superpositionScore * 0.08
       );
 
-      // Primary decision comes from overallRisk, threshold only for moderate cases
+      // Adjust variational score based on benign indicators
+      const adjustedVariationalScore = variationalScore * (1 - benignIndicators.overallBenignScore * 0.4);
+
+      // Primary decision comes from overallRisk and benign indicators
       let classification: 'benign' | 'malignant';
-      if (overallRisk === 'low') {
+      
+      // Strong benign indicators override risk classification
+      if (benignIndicators.overallBenignScore > 0.65) {
         classification = 'benign';
-      } else if (overallRisk === 'high') {
+      } else if (overallRisk === 'low') {
+        classification = 'benign';
+      } else if (overallRisk === 'high' && benignIndicators.overallBenignScore < 0.4) {
         classification = 'malignant';
       } else {
-        // For moderate cases, use the quantum-inspired variational score
-        classification = variationalScore > 0.52 ? 'malignant' : 'benign';
+        // For moderate cases, use adjusted variational score
+        classification = adjustedVariationalScore > 0.55 ? 'malignant' : 'benign';
       }
       
       // Improved confidence calculation based on distance from decision boundary
-      const distanceFromBoundary = Math.abs(variationalScore - 0.52);
-      const normalizedDistance = Math.min(distanceFromBoundary / 0.52, 1);
+      const distanceFromBoundary = Math.abs(adjustedVariationalScore - 0.55);
+      const normalizedDistance = Math.min(distanceFromBoundary / 0.55, 1);
       let baseConfidence = 60 + (normalizedDistance * 25); // 60–85%
+
+      // Boost confidence when benign indicators are strong or weak
+      if (benignIndicators.overallBenignScore > 0.65 || benignIndicators.overallBenignScore < 0.25) {
+        baseConfidence += 8;
+      }
 
       // Boost confidence slightly when overallRisk is clearly low or high
       if (overallRisk !== 'moderate') {
@@ -97,7 +126,7 @@ export const analyzeImage = async (imageData: string): Promise<AnalysisMetrics> 
       }
 
       const quantumNoise = (Math.random() * 8 - 4); // ±4% noise
-      const confidence = Math.max(58, Math.min(92, baseConfidence + quantumNoise));
+      const confidence = Math.max(60, Math.min(94, baseConfidence + quantumNoise));
       
       resolve({
         asymmetryScore,
@@ -300,4 +329,56 @@ const calculateSuperposition = (pixels: Uint8ClampedArray, width: number, height
   const varianceScore = Math.min(intensityVariance / 10000, 1);
   
   return (stateCount + varianceScore) / 2;
+};
+
+// Detect benign skin condition features (moles, skin tags, normal spots)
+const detectBenignFeatures = (
+  pixels: Uint8ClampedArray, 
+  width: number, 
+  height: number,
+  metrics: { asymmetryScore: number; borderIrregularity: number; colorVariation: number }
+): { uniformColor: number; smoothBorders: number; regularShape: number; overallBenignScore: number } => {
+  
+  // 1. Uniform Color Detection (moles and skin tags have uniform color)
+  const colorStandardDeviation = calculateColorStandardDeviation(pixels);
+  const uniformColor = Math.max(0, 1 - (colorStandardDeviation / 60)); // Higher score = more uniform
+  
+  // 2. Smooth Border Detection (benign lesions have smooth, regular borders)
+  const smoothBorders = Math.max(0, 1 - (metrics.borderIrregularity * 1.5));
+  
+  // 3. Regular Shape Detection (symmetry and low asymmetry indicate benign)
+  const regularShape = Math.max(0, 1 - (metrics.asymmetryScore * 2));
+  
+  // 4. Color uniformity check (benign typically has 1-3 colors, malignant has more variation)
+  const colorUniformityBonus = metrics.colorVariation < 4 ? 0.2 : 0;
+  
+  // Calculate overall benign score (0-1, higher = more likely benign)
+  const overallBenignScore = Math.min(1, (
+    uniformColor * 0.35 +
+    smoothBorders * 0.30 +
+    regularShape * 0.30 +
+    colorUniformityBonus * 0.05
+  ));
+  
+  return {
+    uniformColor,
+    smoothBorders,
+    regularShape,
+    overallBenignScore
+  };
+};
+
+// Calculate color standard deviation for uniformity detection
+const calculateColorStandardDeviation = (pixels: Uint8ClampedArray): number => {
+  const colors: number[] = [];
+  
+  for (let i = 0; i < pixels.length; i += 40) {
+    const brightness = (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
+    colors.push(brightness);
+  }
+  
+  const mean = colors.reduce((sum, val) => sum + val, 0) / colors.length;
+  const variance = colors.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / colors.length;
+  
+  return Math.sqrt(variance);
 };
