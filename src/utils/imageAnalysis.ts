@@ -74,14 +74,28 @@ export const analyzeImage = async (imageData: string): Promise<AnalysisMetrics> 
         quantumEntanglement * 0.12 +
         superpositionScore * 0.08
       );
-      
-      // Adjusted threshold for better balance (0.5 is neutral point)
-      const classification = variationalScore > 0.52 ? 'malignant' : 'benign';
+
+      // Primary decision comes from overallRisk, threshold only for moderate cases
+      let classification: 'benign' | 'malignant';
+      if (overallRisk === 'low') {
+        classification = 'benign';
+      } else if (overallRisk === 'high') {
+        classification = 'malignant';
+      } else {
+        // For moderate cases, use the quantum-inspired variational score
+        classification = variationalScore > 0.52 ? 'malignant' : 'benign';
+      }
       
       // Improved confidence calculation based on distance from decision boundary
       const distanceFromBoundary = Math.abs(variationalScore - 0.52);
       const normalizedDistance = Math.min(distanceFromBoundary / 0.52, 1);
-      const baseConfidence = 60 + (normalizedDistance * 30); // Range: 60-90%
+      let baseConfidence = 60 + (normalizedDistance * 25); // 60–85%
+
+      // Boost confidence slightly when overallRisk is clearly low or high
+      if (overallRisk !== 'moderate') {
+        baseConfidence += 5;
+      }
+
       const quantumNoise = (Math.random() * 8 - 4); // ±4% noise
       const confidence = Math.max(58, Math.min(92, baseConfidence + quantumNoise));
       
