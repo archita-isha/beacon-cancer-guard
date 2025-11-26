@@ -104,20 +104,28 @@ export const AnalysisResults = ({ analysis, onReset }: AnalysisResultsProps) => 
 
           <div className="pt-6 border-t space-y-3">
             <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-              Technical Details
+              Quantum Analysis Metrics
             </h3>
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold">{analysis.details.dominantColors}</div>
                 <div className="text-xs text-muted-foreground">Colors</div>
               </div>
               <div>
                 <div className="text-2xl font-bold">{(analysis.details.edgeComplexity * 100).toFixed(1)}%</div>
-                <div className="text-xs text-muted-foreground">Edge Complexity</div>
+                <div className="text-xs text-muted-foreground">Edge</div>
               </div>
               <div>
                 <div className="text-2xl font-bold">{(analysis.details.symmetryRatio * 100).toFixed(1)}%</div>
                 <div className="text-xs text-muted-foreground">Symmetry</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{(analysis.details.quantumEntanglement * 100).toFixed(1)}%</div>
+                <div className="text-xs text-muted-foreground">Entanglement</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{(analysis.details.superpositionScore * 100).toFixed(1)}%</div>
+                <div className="text-xs text-muted-foreground">Superposition</div>
               </div>
             </div>
           </div>
