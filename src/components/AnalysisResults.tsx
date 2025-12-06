@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2, AlertTriangle } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { AnalysisMetrics } from "@/utils/imageAnalysis";
 
 interface AnalysisResultsProps {
@@ -9,42 +9,25 @@ interface AnalysisResultsProps {
 }
 
 export const AnalysisResults = ({ analysis, onReset }: AnalysisResultsProps) => {
-  const getRiskColor = (risk: string) => {
-    switch (risk) {
-      case 'high': return 'text-red-600';
-      case 'moderate': return 'text-yellow-600';
-      default: return 'text-green-600';
-    }
-  };
-
-  const getRiskIcon = (risk: string) => {
-    switch (risk) {
-      case 'high': return <AlertCircle className="w-6 h-6" />;
-      case 'moderate': return <AlertTriangle className="w-6 h-6" />;
-      default: return <CheckCircle2 className="w-6 h-6" />;
-    }
-  };
+  const isMalignant = analysis.classification === 'malignant';
 
   return (
     <section className="py-20 px-4">
       <div className="container mx-auto max-w-4xl">
         <Card className="p-8 space-y-6">
           <div className="text-center space-y-4">
-            <div className={`flex items-center justify-center gap-3 ${getRiskColor(analysis.overallRisk)}`}>
-              {getRiskIcon(analysis.overallRisk)}
-              <h2 className="text-2xl font-bold uppercase">
-                {analysis.overallRisk} Risk
+            <div className={`flex items-center justify-center gap-3 ${isMalignant ? 'text-red-600' : 'text-green-600'}`}>
+              {isMalignant ? <AlertCircle className="w-8 h-8" /> : <CheckCircle2 className="w-8 h-8" />}
+              <h2 className="text-3xl font-bold uppercase">
+                {analysis.classification}
               </h2>
             </div>
-            <div className="pt-4 border-t">
-              <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-lg font-bold ${
-                analysis.classification === 'malignant' 
-                  ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300' 
-                  : 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300'
-              }`}>
-                <span className="uppercase">{analysis.classification}</span>
-                <span className="text-sm font-normal opacity-75">({analysis.confidence.toFixed(1)}% confidence)</span>
-              </div>
+            <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-lg font-bold ${
+              isMalignant 
+                ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300' 
+                : 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300'
+            }`}>
+              <span>{analysis.confidence.toFixed(1)}% confidence</span>
             </div>
           </div>
 
@@ -104,7 +87,7 @@ export const AnalysisResults = ({ analysis, onReset }: AnalysisResultsProps) => 
 
           <div className="pt-6 border-t space-y-3">
             <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-              Quantum Analysis Metrics
+              Analysis Metrics
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
               <div>
