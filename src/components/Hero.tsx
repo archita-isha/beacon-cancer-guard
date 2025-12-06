@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Shield, Activity, Zap } from "lucide-react";
+import { ArrowRight, Shield, Activity, Zap, Stethoscope } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface HeroProps {
@@ -50,6 +50,16 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
               >
                 Learn More
                 <Zap className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
+            <Link to="/find-care">
+              <Button 
+                variant="outline"
+                size="lg"
+                className="border-sky-500/50 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30 px-8"
+              >
+                Find Care
+                <Stethoscope className="ml-2 w-5 h-5" />
               </Button>
             </Link>
           </div>
